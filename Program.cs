@@ -1,89 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
 
-namespace FileMerge
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            string file1Path = @"c:\Users\bk91062\Documents\File1.txt";
-            string file2Path = @"c:\Users\bk91062\Documents\File2.txt";
-            string outputPath = "output.txt";
+std::vector<std::string> ReadFileLines(const std::string& filePath) {
+    std::vector<std::string> lines;
+    std::ifstream file(filePath);
 
-            // Read lines from both files
-            List<string> file1Lines = ReadFileLines(file1Path);
-            List<string> file2Lines = ReadFileLines(file2Path);
-
-            // Merge the lines and write to output file
-            MergeAndWrite(file1Lines, file2Lines, outputPath);
-
-            Console.WriteLine("Files merged successfully.");
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            lines.push_back(line);
         }
+        file.close();
+    } else {
+        std::cerr << "File not found: " << filePath << std::endl;
+    }
 
-        static List<string> ReadFileLines(string filePath)
-        {
-            List<string> lines = new List<string>();
+    return lines;
+}
 
-            try
-            {
-                using (StreamReader reader = new StreamReader(filePath))
-                {
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        lines.Add(line);
-                    }
-                }
-            }
-            catch (FileNotFoundException)
-            {
-                Console.WriteLine($"File not found: {filePath}");
-            }
-            catch (IOException ex)
-            {
-                Console.WriteLine($"Error reading file: {ex.Message}");
-            }
+void MergeAndWrite(const std::vector<std::string>& file1Lines, const std::vector<std::string>& file2Lines, const std::string& outputPath) {
+    std::ofstream outputFile(outputPath);
 
-            return lines;
-        }
+    size_t i = 0, j = 0;
 
-        static void MergeAndWrite(List<string> file1Lines, List<string> file2Lines, string outputPath)
-        {
-            using (StreamWriter writer = new StreamWriter(outputPath))
-            {
-                int i = 0, j = 0;
-
-                // Merge the lines until either file reaches its end
-                while (i < file1Lines.Count && j < file2Lines.Count)
-                {
-                    if (file1Lines[i].CompareTo(file2Lines[j]) < 0)
-                    {
-                        writer.WriteLine(file1Lines[i]);
-                        i++;
-                    }
-                    else
-                    {
-                        writer.WriteLine(file2Lines[j]);
-                        j++;
-                    }
-                }
-
-                // Write remaining lines from file 1
-                while (i < file1Lines.Count)
-                {
-                    writer.WriteLine(file1Lines[i]);
-                    i++;
-                }
-
-                // Write remaining lines from file 2
-                while (j < file2Lines.Count)
-                {
-                    writer.WriteLine(file2Lines[j]);
-                    j++;
-                }
-            }
+    while (i < file1Lines.size() && j < file2Lines.size()) {
+        if (file1Lines[i] < file2Lines[j]) {
+            outputFile << file1Lines[i] << std::endl;
+            i++;
+        } else {
+            outputFile << file2Lines[j] << std::endl;
+            j++;
         }
     }
+
+    while (i < file1Lines.size()) {
+        outputFile << file1Lines[i] << std::endl;
+        i++;
+    }
+
+    while (j < file2Lines.size()) {
+        outputFile << file2Lines[j] << std::endl;
+        j++;
+    }
+
+    outputFile.close();
+}
+
+int main() {
+    std::string file1Path = "c:\\Users\\bk91062\\Documents\\File1.txt";
+    std::string file2Path = "c:\\Users\\bk91062\\Documents\\File2.txt";
+    std::string outputPath = "output.txt";
+
+    // Read lines from both files
+    std::vector<std::string> file1Lines = ReadFileLines(file1Path);
+    std::vector<std::string> file2Lines = ReadFileLines(file2Path);
+
+    // Merge the lines and write to output file
+    MergeAndWrite(file1Lines, file2Lines, outputPath);
+
+    std::cout << "Files merged successfully." << std::endl;
+
+    return 0;
 }
